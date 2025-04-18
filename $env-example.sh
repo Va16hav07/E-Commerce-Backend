@@ -1,0 +1,7 @@
+NODE_ENV=development
+PORT=5000
+MONGO_URI=
+FRONTEND_URL=http://localhost:5173
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+SESSION_SECRET=your_session_secret
