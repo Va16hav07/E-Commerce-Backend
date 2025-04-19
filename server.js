@@ -8,22 +8,42 @@ const passport = require('passport');
 const cors = require('cors');
 const dotenv = require('dotenv');
 
-// Load environment variables
-dotenv.config();
-
 // Initialize express app
 const app = express();
 
-// Connect to MongoDB
+// Connect to MongoDB with enhanced error handling
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  serverSelectionTimeoutMS: 15000
+  serverSelectionTimeoutMS: 15000,
+  heartbeatFrequencyMS: 10000, // Check server status every 10 seconds
+  retryWrites: true, // Enable retryable writes
+  socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
 })
 .then(() => console.log('MongoDB Connected'))
 .catch(err => {
   console.error('MongoDB Connection Error:', err);
   process.exit(1);
+});
+
+// Monitor for MongoDB connection issues
+mongoose.connection.on('error', err => {
+  console.error('MongoDB connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.warn('MongoDB disconnected. Attempting to reconnect...');
+});
+
+mongoose.connection.on('reconnected', () => {
+  console.log('MongoDB reconnected');
+});
+
+// Graceful shutdown handling
+process.on('SIGINT', async () => {
+  await mongoose.connection.close();
+  console.log('MongoDB connection closed due to app termination');
+  process.exit(0);
 });
 
 // CORS middleware - Important to place BEFORE other middleware

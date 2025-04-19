@@ -62,7 +62,7 @@ const OrderSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['PAID', 'SHIPPED', 'IN_TRANSIT', 'DELIVERED', 'NOT_DELIVERED', 'CANCELLED'],
+    enum: ['PAID', 'SHIPPED', 'DELIVERED', 'UNDELIVERED'],
     default: 'PAID'
   },
   riderId: {
@@ -77,7 +77,7 @@ const OrderSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['CARD', 'COD', 'WALLET', 'card', 'cod', 'wallet'],  // Added lowercase options
+    enum: ['CARD', 'COD', 'WALLET', 'card', 'cod', 'wallet'],
     default: 'CARD'
   },
   createdAt: {

@@ -299,7 +299,8 @@ router.put('/:id/assign', authorize('ADMIN'), async (req, res) => {
       {
         riderId,
         riderName,
-        status: 'SHIPPED'
+        status: 'SHIPPED', // Automatically change status to SHIPPED when rider is assigned
+        updatedAt: Date.now()
       },
       { new: true, runValidators: true }
     );
@@ -329,8 +330,8 @@ router.put('/:id/status', authorize('RIDER', 'ADMIN'), async (req, res) => {
   try {
     const { status } = req.body;
     
-    // Update the valid statuses to include all necessary ones
-    const validStatuses = ['PLACED', 'PAID', 'SHIPPED', 'IN_TRANSIT', 'DELIVERED', 'NOT_DELIVERED', 'CANCELLED'];
+    // Update the valid statuses to include only the necessary ones
+    const validStatuses = ['PAID', 'SHIPPED', 'DELIVERED', 'UNDELIVERED'];
     
     // Validate status
     if (!status || !validStatuses.includes(status)) {
@@ -367,7 +368,7 @@ router.put('/:id/status', authorize('RIDER', 'ADMIN'), async (req, res) => {
     // Update the status
     const updatedOrder = await Order.findByIdAndUpdate(
       req.params.id,
-      { status },
+      { status, updatedAt: Date.now() },
       { new: true, runValidators: true }
     );
     
@@ -403,7 +404,7 @@ router.put('/:id/admin-update', authorize('ADMIN'), async (req, res) => {
     }
     
     // Create update object with only provided fields
-    const updateData = {};
+    const updateData = { updatedAt: Date.now() };
     if (status) updateData.status = status;
     if (riderId) updateData.riderId = riderId;
     if (riderName) updateData.riderName = riderName;
@@ -423,6 +424,43 @@ router.put('/:id/admin-update', authorize('ADMIN'), async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error updating order',
+      error: error.message
+    });
+  }
+});
+
+// Unassign a rider from an order (admin only)
+router.put('/:id/unassign', authorize('ADMIN'), async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+    
+    // Update order to remove rider and set status back to PAID
+    const updatedOrder = await Order.findByIdAndUpdate(
+      req.params.id,
+      {
+        $unset: { riderId: "", riderName: "" },
+        status: 'PAID', // Reset to PAID when a rider is unassigned
+        updatedAt: Date.now()
+      },
+      { new: true, runValidators: true }
+    );
+    
+    res.json({
+      success: true,
+      data: updatedOrder,
+      message: 'Rider unassigned successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error unassigning rider',
       error: error.message
     });
   }
