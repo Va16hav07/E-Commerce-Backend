@@ -47,6 +47,23 @@ To populate the database with sample data (products, users, orders):
 npm run seed
 ```
 
+### Demo Credentials
+
+After running the seed script, you can use these credentials to login with different roles:
+
+#### Admin Account
+- Email: admin@coolgarmi.com
+- Password: admin123
+
+#### Rider Accounts
+- Email: rider1@coolgarmi.com
+- Password: rider123
+
+- Email: rider2@coolgarmi.com
+- Password: rider123
+
+> Note: These credentials will only work after successfully seeding the database.
+
 ## Frontend Repository
 
 The frontend of this application is available at:
